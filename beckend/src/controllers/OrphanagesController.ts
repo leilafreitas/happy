@@ -1,6 +1,5 @@
 import { create } from 'domain';
 import {getRepository} from 'typeorm';
-import { isExpressionStatement, updateYield } from 'typescript';
 import Orphanages from '../models/Orphanage';
 import {Request,Response} from 'express';
 import Orphanage from '../models/Orphanage';
@@ -53,14 +52,16 @@ export default{
                 images:Yup.array(
                     Yup.object().shape({
                         path:Yup.string().required()
-                }))
-            })
+                })
+                )
+            });
             await schema.validate(data,{
                 abortEarly:false
-            })
+            });
             const orphanage = OrphanageRepository.create(data);
         
             await OrphanageRepository.save(orphanage);
+            
             return res.json(orphanage)
     },
     async findOne(req:Request,res:Response){
