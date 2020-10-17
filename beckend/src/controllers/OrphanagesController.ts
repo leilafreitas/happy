@@ -1,10 +1,11 @@
 import { create } from 'domain';
 import {getRepository} from 'typeorm';
-import { isExpressionStatement } from 'typescript';
+import { isExpressionStatement, updateYield } from 'typescript';
 import Orphanages from '../models/Orphanage';
 import {Request,Response} from 'express';
 import Orphanage from '../models/Orphanage';
 import orphanageView from '../views/orphanages_view';
+import * as Yup from 'yup';
 export default{
     async index(req:Request,res:Response){
         const OrphanageRepository=getRepository(Orphanage);
@@ -31,7 +32,7 @@ export default{
             const images= requentImages.map(image=>{
                 return {path:image.filename}
             })
-            const orphanage = OrphanageRepository.create({
+            const data ={
                 name,
                 latitude,
                 longitude,
@@ -40,7 +41,24 @@ export default{
                 open_on_weekends,
                 opening_hours, 
                 images
-            });
+            }
+            const schema = Yup.object().shape({
+                name:Yup.string().required(),
+                latitude:Yup.number().required(),
+                longitude:Yup.number().required(),
+                about:Yup.string().required().max(300),
+                instructions:Yup.string().required(),
+                open_on_weekends:Yup.boolean().required(),
+                opening_hours:Yup.string().required(), 
+                images:Yup.array(
+                    Yup.object().shape({
+                        path:Yup.string().required()
+                }))
+            })
+            await schema.validate(data,{
+                abortEarly:false
+            })
+            const orphanage = OrphanageRepository.create(data);
         
             await OrphanageRepository.save(orphanage);
             return res.json(orphanage)

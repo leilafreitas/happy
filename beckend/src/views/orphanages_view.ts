@@ -1,5 +1,6 @@
 import Orphanage from "../models/Orphanage";
 import imagesView from "./imagesView";
+import * as Yup from 'yup';
 
 export default{
     render(orphanage:Orphanage){
